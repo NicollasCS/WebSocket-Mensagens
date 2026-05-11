@@ -1,103 +1,95 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WebSocket Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
 
-<link rel="stylesheet" href="style.css">
-<script defer src="sock-connection.js"></script>
+    <script defer src="sock-connection.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-    <div class="loginBox">
-        <h1>Chat Online</h1>
-        <p>Faça login para continuar</p>
+    <div id="app">
 
-        <input type="text" id="user" placeholder="Usuário">
-        <input type="password" id="password" placeholder="Senha">
+        <!-- ESQUERDA -->
+        <aside id="leftSidebar">
+            <h3>Salas</h3>
 
-        <!-- REMOVIDO BOTÃO CONECTAR DAQUI -->
+            <div id="roomList"></div>
 
-        <div class="btns">
-            <button onclick="registerUser()">Registrar</button>
-            <button onclick="loginUser()">Login</button>
-        </div>
+            <div>
+                <input type="text" id="roomName" placeholder="Nome da sala">
+                <button type="button" onclick="createRoom()">Criar Sala</button>
+            </div>
 
-        <div id="authStatus"></div>
+            <!-- AUTH (mantive tudo teu) -->
+            <form id="authForm">
+                <div>
+                    <label for="user">Usuário:</label>
+                    <input type="text" id="user" autocomplete="username">
+                </div>
+                <div>
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" autocomplete="current-password">
+                </div>
+                <div>
+                    <button type="button" id="connect" onclick="serverConnect()">Conectar</button>
+                    <button type="button" id="disconnect" onclick="serverDisconnect()">Desconectar</button>
+                </div>
+                <div>
+                    <button type="button" onclick="registerUser()">Cadastrar</button>
+                    <button type="button" onclick="loginUser()">Login</button>
+                </div>
+                <div id="authStatus"></div>
+            </form>
+        </aside>
+
+        <!-- CENTRO -->
+        <main id="chatArea">
+
+            <div id="chatHeader">
+                <strong>Sala:</strong>
+                <span id="currentRoomName">Nenhuma</span>
+            </div>
+
+            <article id="chatBox"></article>
+
+            <div id="chatInput">
+                <input type="text" id="message" placeholder="Digite sua mensagem">
+                <button type="button" id="send" onclick="serverSend()">Enviar</button>
+            </div>
+
+        </main>
+
+        <!-- DIREITA -->
+        <aside id="rightSidebar">
+
+            <strong>Participantes</strong>
+            <div id="memberList"></div>
+
+            <hr>
+
+            <div>
+                <label>
+                    <input type="radio" name="targetMode" value="all" checked onchange="updateTargetMode()">
+                    Todos
+                </label>
+                <label>
+                    <input type="radio" name="targetMode" value="selected" onchange="updateTargetMode()">
+                    Selecionar
+                </label>
+            </div>
+
+            <div id="recipientSection">
+                <strong>Destinatários:</strong>
+                <div id="recipientList"></div>
+            </div>
+
+        </aside>
+
     </div>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-
-    <!-- LEFT -->
-    <aside id="leftSidebar">
-        <h3>Servidores</h3>
-
-        <div id="roomList"></div>
-
-        <div id="salaDiv">
-            <input type="text" id="roomName" placeholder="Nome do grupo">
-            <button onclick="createRoom()">Criar Grupo</button>
-        </div>
-    </aside>
-
-    <!-- CHAT -->
-    <main id="chatArea">
-
-        <div id="chatHeader">
-            <strong>Grupo:</strong>
-            <span id="currentRoomName">Nenhum</span>
-
-            <!-- BOTÃO CONECTAR AGORA FICA NO CHAT -->
-            <button id="connectServerBtn" onclick="serverConnect()">
-                Conectar Servidor
-            </button>
-
-            <button onclick="serverDisconnect()">
-                Sair
-            </button>
-        </div>
-
-        <article id="chatBox"></article>
-
-        <div id="chatInput">
-            <input type="text" id="message" placeholder="Digite sua mensagem">
-            <button onclick="serverSend()">Enviar</button>
-        </div>
-
-    </main>
-
-    <!-- RIGHT -->
-    <aside id="rightSidebar">
-        <strong>Participantes</strong>
-        <div id="memberList"></div>
-    </aside>
-
-</div>
-            <label>
-                <input type="radio" name="targetMode" value="all" checked onchange="updateTargetMode()">
-                Todos
-            </label>
-
-            <label>
-                <input type="radio" name="targetMode" value="selected" onchange="updateTargetMode()">
-                Selecionar
-            </label>
-        </div>
-
-        <div id="recipientSection" class="hidden">
-            <strong>Destinatários:</strong>
-            <div id="recipientList"></div>
-        </div>
-
-    </aside>
-
-</div>
 
 </body>
 </html>
