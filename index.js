@@ -5,147 +5,238 @@ const server = new WebSocketServer({ port: 3002 });
 const users = {};
 const rooms = {};
 
-function send(ws, payload) {
+function send(ws, data) {
     if (ws && ws.readyState === ws.OPEN) {
-        ws.send(JSON.stringify(payload));
+        ws.send(JSON.stringify(data));
     }
 }
 
 function broadcastRooms() {
-    const roomNames = Object.keys(rooms);
-    const payload = { action: 'rooms', rooms: roomNames };
-    Object.values(users).forEach((user) => {
-        if (user.socket) send(user.socket, payload);
+    const roomList = Object.keys(rooms);
+
+    Object.values(users).forEach(user => {
+        if (user.socket) {
+            send(user.socket, {
+                action: "rooms",
+                rooms: roomList
+            });
+        }
     });
 }
 
-function updateRoomMembers(room) {
-    const members = rooms[room] ? [...rooms[room]] : [];
-    const payload = { action: 'members', room, members };
-    members.forEach((login) => {
+function updateMembers(room) {
+    if (!rooms[room]) return;
+
+    const members = [...rooms[room]];
+
+    members.forEach(login => {
         const user = users[login];
-        if (user && user.socket) send(user.socket, payload);
+        if (user?.socket) {
+            send(user.socket, {
+                action: "members",
+                room,
+                members
+            });
+        }
     });
 }
 
-function removeUserFromRooms(login) {
-    Object.keys(rooms).forEach((room) => {
+function removeFromRooms(login) {
+    for (const room in rooms) {
         if (rooms[room].has(login)) {
             rooms[room].delete(login);
+
             if (rooms[room].size === 0) {
                 delete rooms[room];
             } else {
-                updateRoomMembers(room);
+                updateMembers(room);
             }
         }
-    });
+    }
+
     broadcastRooms();
 }
 
-server.on('connection', (client) => {
-    client.on('message', (message) => {
+server.on("connection", (client) => {
+
+    client.on("message", (msg) => {
         let data;
+
         try {
-            data = JSON.parse(message);
-        } catch (error) {
+            data = JSON.parse(msg);
+        } catch {
             return;
         }
 
-        if (data.action === 'register') {
+        // ===================
+        // REGISTRAR
+        // ===================
+        if (data.action === "register") {
+
             if (!data.login || !data.password) {
-                return send(client, { action: 'error', msg: 'Login e senha são obrigatórios.' });
+                return send(client, {
+                    action: "error",
+                    msg: "Preencha usuário e senha."
+                });
             }
+
             if (users[data.login]) {
-                return send(client, { action: 'error', msg: 'Usuário já cadastrado.' });
+                return send(client, {
+                    action: "error",
+                    msg: "Usuário já existe."
+                });
             }
-            users[data.login] = { password: data.password, socket: null };
-            return send(client, { action: 'success', msg: 'Cadastro realizado com sucesso.' });
+
+            users[data.login] = {
+                password: data.password,
+                socket: null
+            };
+
+            return send(client, {
+                action: "success",
+                msg: "Cadastro realizado."
+            });
         }
 
-        if (data.action === 'login') {
+        // ===================
+        // LOGIN
+        // ===================
+        if (data.action === "login") {
+
             const user = users[data.login];
+
             if (!user || user.password !== data.password) {
-                return send(client, { action: 'error', msg: 'Login ou senha incorretos.' });
+                return send(client, {
+                    action: "error",
+                    msg: "Login inválido."
+                });
             }
+
             user.socket = client;
             client.login = data.login;
             client.currentRoom = null;
-            send(client, { action: 'success', msg: 'Login realizado.', rooms: Object.keys(rooms) });
+
+            send(client, {
+                action: "success",
+                msg: "Login realizado."
+            });
+
             broadcastRooms();
+
             return;
         }
 
-        if (data.action === 'list_rooms') {
-            return send(client, { action: 'rooms', rooms: Object.keys(rooms) });
-        }
-
+        // precisa logar
         if (!client.login) {
-            return send(client, { action: 'error', msg: 'Usuario não autenticado.' });
+            return send(client, {
+                action: "error",
+                msg: "Faça login primeiro."
+            });
         }
 
-        if (data.action === 'create_room') {
+        // ===================
+        // CRIAR SALA
+        // ===================
+        if (data.action === "create_room") {
+
             if (!data.room) {
-                return send(client, { action: 'error', msg: 'Nome da sala é obrigatório.' });
+                return send(client, {
+                    action: "error",
+                    msg: "Digite o nome da sala."
+                });
             }
-            if (!rooms[data.room]) {
-                rooms[data.room] = new Set();
-                broadcastRooms();
-                return send(client, { action: 'success', msg: `Sala '${data.room}' criada.` });
+
+            if (rooms[data.room]) {
+                return send(client, {
+                    action: "error",
+                    msg: "Sala já existe."
+                });
             }
-            return send(client, { action: 'error', msg: 'Sala já existe.' });
+
+            rooms[data.room] = new Set();
+
+            broadcastRooms();
+
+            return send(client, {
+                action: "success",
+                msg: "Sala criada."
+            });
         }
 
-        if (data.action === 'join_room') {
-            if (!data.room || !rooms[data.room]) {
-                return send(client, { action: 'error', msg: 'Sala não encontrada.' });
+        // ===================
+        // ENTRAR SALA
+        // ===================
+        if (data.action === "join_room") {
+
+            if (!rooms[data.room]) {
+                return send(client, {
+                    action: "error",
+                    msg: "Sala não encontrada."
+                });
             }
+
             rooms[data.room].add(client.login);
             client.currentRoom = data.room;
-            send(client, { action: 'joined_room', room: data.room });
-            updateRoomMembers(data.room);
+
+            send(client, {
+                action: "joined_room",
+                room: data.room
+            });
+
+            updateMembers(data.room);
+
             return;
         }
 
-        if (data.action === 'room_message') {
-            const room = client.currentRoom;
-            if (!room || !rooms[room] || !rooms[room].has(client.login)) {
-                return send(client, { action: 'error', msg: 'Você precisa entrar em uma sala antes de enviar mensagens.' });
-            }
-            const text = data.text || '';
-            const targets = Array.isArray(data.targets) ? data.targets.filter(Boolean) : [];
-            const isDirect = targets.length > 0;
-            const finalTargets = new Set(isDirect ? [...targets, client.login] : [...rooms[room]]);
+        // ===================
+        // MENSAGEM
+        // ===================
+        if (data.action === "room_message") {
 
-            finalTargets.forEach((login) => {
-                if (!rooms[room].has(login)) return;
+            const room = client.currentRoom;
+
+            if (!room) return;
+
+            rooms[room].forEach(login => {
                 const user = users[login];
-                if (user && user.socket) {
+
+                if (user?.socket) {
                     send(user.socket, {
-                        action: 'chat_message',
-                        room,
+                        action: "chat_message",
                         sender: client.login,
-                        text,
-                        direct: isDirect,
-                        targets,
+                        text: data.text,
+                        room
                     });
                 }
             });
+
             return;
         }
 
-        if (data.action === 'disconnect') {
-            if (client.login) {
-                removeUserFromRooms(client.login);
-            }
-            return;
+        // ===================
+        // DESCONECTAR
+        // ===================
+        if (data.action === "disconnect") {
+
+            removeFromRooms(client.login);
+
+            const user = users[client.login];
+
+            if (user) user.socket = null;
         }
+
     });
 
-    client.on('close', () => {
+    client.on("close", () => {
         if (client.login) {
-            removeUserFromRooms(client.login);
+            removeFromRooms(client.login);
+
             const user = users[client.login];
+
             if (user) user.socket = null;
         }
     });
+
 });
+
+console.log("Servidor rodando na porta 3002");

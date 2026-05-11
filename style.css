@@ -1,3 +1,14 @@
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #1e1f22;
+        --text-color: white;
+        --left-sidebar-background: #2b2d31;
+        --button: #1960e4;
+        --card: #313338;
+        --input: #1e1f22;
+    }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -7,11 +18,76 @@
 
 body {
     height: 100vh;
-    background: #1e1f22;
+    background: var(--background);
+    color: var(--text-color);
+}
+
+/* BOTÕES */
+button {
+    padding: 8px;
+    background: var(--button);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* LOGIN SCREEN */
+#loginScreen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginBox {
+    width: 350px;
+    background: var(--left-sidebar-background);
+    padding: 30px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,.35);
+}
+
+.loginBox h1 {
+    text-align: center;
+    font-size: 28px;
+}
+
+.loginBox p {
+    text-align: center;
+    color: #b5bac1;
+    margin-bottom: 10px;
+}
+
+.loginBox input {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: var(--input);
     color: white;
 }
 
-/* GRID */
+.loginBox .btns {
+    display: flex;
+    gap: 10px;
+}
+
+#authStatus {
+    text-align: center;
+    font-size: 14px;
+    color: #b5bac1;
+}
+
+/* GRID APP */
 #app {
     display: grid;
     grid-template-columns: 240px 1fr 240px;
@@ -20,7 +96,7 @@ body {
 
 /* LEFT */
 #leftSidebar {
-    background: #2b2d31;
+    background: var(--left-sidebar-background);
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -32,67 +108,34 @@ body {
     overflow-y: auto;
 }
 
-#roomList div {
-    padding: 10px;
-    border-radius: 6px;
+#roomList button {
+    width: 100%;
+    margin-bottom: 6px;
     background: #3c3f45;
-    margin-bottom: 5px;
-    cursor: pointer;
 }
 
-#roomList div:hover {
+#roomList button:hover {
     background: #4e525a;
 }
 
-#createRoomBox {
-    display: flex;
-    gap: 5px;
+#salaDiv {
+    display: grid;
+    gap: 10px;
 }
 
-#createRoomBox input {
-    flex: 1;
-    padding: 6px;
-    border: none;
-    border-radius: 5px;
-}
-
-#createRoomBox button {
-    padding: 6px;
-    background: #5865f2;
-    border: none;
-    border-radius: 5px;
+#roomName {
+    background-color: var(--input);
     color: white;
-}
-
-/* AUTH */
-#authForm {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-#authForm input {
-    padding: 6px;
-    border-radius: 5px;
-    border: none;
-    background: #1e1f22;
-    color: white;
-}
-
-#authForm button {
-    padding: 6px;
-    border: none;
-    border-radius: 5px;
-    background: #5865f2;
-    color: white;
-    cursor: pointer;
+    border: 0;
+    padding: 10px;
+    border-radius: 6px;
 }
 
 /* CHAT */
 #chatArea {
     display: flex;
     flex-direction: column;
-    background: #313338;
+    background: var(--card);
 }
 
 #chatHeader {
@@ -110,15 +153,14 @@ body {
     gap: 8px;
 }
 
-/* mensagem */
-.message {
+.received {
     background: #2b2d31;
     padding: 10px;
     border-radius: 8px;
-    max-width: 60%;
+    max-width: 65%;
 }
 
-/* INPUT */
+/* INPUT CHAT */
 #chatInput {
     display: flex;
     padding: 10px;
@@ -135,14 +177,6 @@ body {
     color: white;
 }
 
-#chatInput button {
-    padding: 10px 15px;
-    background: #5865f2;
-    border: none;
-    border-radius: 6px;
-    color: white;
-}
-
 /* RIGHT */
 #rightSidebar {
     background: #232428;
@@ -154,4 +188,9 @@ body {
     border-radius: 6px;
     background: #2b2d31;
     margin-bottom: 5px;
+}
+
+/* UTIL */
+.hidden {
+    display: none !important;
 }
