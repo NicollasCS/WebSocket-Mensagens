@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+
+    <script defer src="sock-connection.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- ESQUERDA -->
+        <aside id="leftSidebar">
+            <h3>Salas</h3>
+
+            <div id="roomList"></div>
+
+            <div>
+                <input type="text" id="roomName" placeholder="Nome da sala">
+                <button type="button" onclick="createRoom()">Criar Sala</button>
+            </div>
+
+            <!-- AUTH (mantive tudo teu) -->
+            <form id="authForm">
+                <div>
+                    <label for="user">Usuário:</label>
+                    <input type="text" id="user" autocomplete="username">
+                </div>
+                <div>
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" autocomplete="current-password">
+                </div>
+                <div>
+                    <button type="button" id="connect" onclick="serverConnect()">Conectar</button>
+                    <button type="button" id="disconnect" onclick="serverDisconnect()">Desconectar</button>
+                </div>
+                <div>
+                    <button type="button" onclick="registerUser()">Cadastrar</button>
+                    <button type="button" onclick="loginUser()">Login</button>
+                </div>
+                <div id="authStatus"></div>
+            </form>
+        </aside>
+
+        <!-- CENTRO -->
+        <main id="chatArea">
+
+            <div id="chatHeader">
+                <strong>Sala:</strong>
+                <span id="currentRoomName">Nenhuma</span>
+            </div>
+
+            <article id="chatBox"></article>
+
+            <div id="chatInput">
+                <input type="text" id="message" placeholder="Digite sua mensagem">
+                <button type="button" id="send" onclick="serverSend()">Enviar</button>
+            </div>
+
+        </main>
+
+        <!-- DIREITA -->
+        <aside id="rightSidebar">
+
+            <strong>Participantes</strong>
+            <div id="memberList"></div>
+
+            <hr>
+
+            <div>
+                <label>
+                    <input type="radio" name="targetMode" value="all" checked onchange="updateTargetMode()">
+                    Todos
+                </label>
+                <label>
+                    <input type="radio" name="targetMode" value="selected" onchange="updateTargetMode()">
+                    Selecionar
+                </label>
+            </div>
+
+            <div id="recipientSection">
+                <strong>Destinatários:</strong>
+                <div id="recipientList"></div>
+            </div>
+
+        </aside>
+
+    </div>
+
+</body>
+</html>
